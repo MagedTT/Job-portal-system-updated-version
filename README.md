@@ -1,3 +1,8 @@
+# ERD Model
+<img width="1290" height="822" alt="JobPortalSystemSchema_ITI" src="https://github.com/user-attachments/assets/91d896d5-8610-4973-9e87-60091be4618e" />
+
+---
+
 # Jobverse – Job Portal System
 
 A modern, full-featured job portal built with ASP.NET Core Razor Pages and .NET9. Jobverse connects employers and job seekers with a seamless, intuitive experience for posting jobs, applying, messaging, and managing careers.
