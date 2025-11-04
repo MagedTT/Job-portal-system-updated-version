@@ -1,0 +1,111 @@
+@model job_portal_system.Models.ViewModels.JobViewModel
+
+@{
+    ViewData["Title"] = "Post a New Job";
+}
+
+<link rel="stylesheet" href="~/css/pages/job-form.css" />
+
+<div class="job-form-section">
+    <div class="container">
+        <div class="job-form-container">
+            <!-- Header -->
+            <div class="form-header">
+                <div class="form-icon-wrapper">
+                    <i class="bi bi-briefcase-fill"></i>
+                </div>
+                <h2 class="form-title">Post a New Job</h2>
+                <p class="form-subtitle">Fill in the details below to create your job listing</p>
+            </div>
+
+            <!-- Form -->
+            <form asp-action="Create" method="post" class="job-form" novalidate>
+                <div class="form-grid">
+                    <!-- Job Title -->
+                    <div class="form-group-custom full-width">
+                        <label asp-for="Title" class="form-label-custom">
+                            <i class="bi bi-pencil-fill"></i> Job Title
+                        </label>
+                        <input asp-for="Title" class="form-input-custom" placeholder="e.g. Senior Software Engineer" />
+                        <span asp-validation-for="Title" class="validation-message"></span>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="form-group-custom">
+                        <label asp-for="CategoryId" class="form-label-custom">
+                            <i class="bi bi-tag-fill"></i> Category
+                        </label>
+                        <select asp-for="CategoryId" asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))" class="form-input-custom">
+                            <option value="">Select a category</option>
+                        </select>
+                        <span asp-validation-for="CategoryId" class="validation-message"></span>
+                    </div>
+
+                    <!-- Job Type -->
+                    <div class="form-group-custom">
+                        <label asp-for="JobType" class="form-label-custom">
+                            <i class="bi bi-clock-fill"></i> Job Type
+                        </label>
+                        <select asp-for="JobType" asp-items="@(new SelectList(ViewBag.JobTypes))" class="form-input-custom">
+                            <option value="">Select job type</option>
+                        </select>
+                        <span asp-validation-for="JobType" class="validation-message"></span>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="form-group-custom">
+                        <label asp-for="Location" class="form-label-custom">
+                            <i class="bi bi-geo-alt-fill"></i> Location
+                        </label>
+                        <input asp-for="Location" class="form-input-custom" placeholder="e.g. Cairo, Egypt" />
+                        <span asp-validation-for="Location" class="validation-message"></span>
+                    </div>
+
+                    <!-- Salary -->
+                    <div class="form-group-custom">
+                        <label asp-for="Salary" class="form-label-custom">
+                            <i class="bi bi-currency-dollar"></i> Salary
+                        </label>
+                        <input asp-for="Salary" type="number" class="form-input-custom" placeholder="e.g. 5000" />
+                        <span asp-validation-for="Salary" class="validation-message"></span>
+                    </div>
+
+                    <!-- Years of Experience -->
+                    <div class="form-group-custom">
+                        <label asp-for="YearsOfExperience" class="form-label-custom">
+                            <i class="bi bi-award-fill"></i> Years of Experience
+                        </label>
+                        <input asp-for="YearsOfExperience" type="number" class="form-input-custom" placeholder="e.g. 3" />
+                        <span asp-validation-for="YearsOfExperience" class="validation-message"></span>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group-custom full-width">
+                        <label asp-for="Description" class="form-label-custom">
+                            <i class="bi bi-file-text-fill"></i> Job Description
+                        </label>
+                        <textarea asp-for="Description" class="form-input-custom" rows="6" 
+                                  placeholder="Describe the role, responsibilities, and requirements..."></textarea>
+                        <span asp-validation-for="Description" class="validation-message"></span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="form-actions">
+                    <a asp-action="ManageJobs" class="btn-form btn-secondary">
+                        <i class="bi bi-x-circle"></i>
+                        <span>Cancel</span>
+                    </a>
+                    <button type="submit" class="btn-form btn-primary">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Post Job</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

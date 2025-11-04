@@ -1,0 +1,78 @@
+@{
+    ViewData["Title"] = "Notification Debug";
+}
+
+<div class="container mt-5 pt-5">
+    <div class="card" style="background: #161b22; border: 1px solid #30363d;">
+        <div class="card-header" style="background: #0d1117; border-bottom: 1px solid #30363d;">
+      <h2 class="text-light mb-0">
+        <i class="bi bi-bug"></i> Notification System Debug
+       </h2>
+        </div>
+        <div class="card-body">
+     <div class="alert alert-info">
+    <i class="bi bi-info-circle"></i>
+       <strong>Debug Information:</strong> This page helps diagnose notification system issues.
+   </div>
+
+        @if (ViewBag.Results != null)
+            {
+      <div class="results">
+   @foreach (var result in ViewBag.Results as List<string>)
+          {
+          <div class="mb-2 p-2" style="background: #0d1117; border-left: 3px solid @(result.Contains("?") ? "#f85149" : "#2ea043"); border-radius: 4px;">
+    <code style="color: #c9d1d9;">@result</code>
+         </div>
+         }
+      </div>
+     }
+
+  <div class="mt-4">
+       <h4 class="text-light">Quick Actions:</h4>
+        <div class="btn-group" role="group">
+         <a href="/DebugNotification/TestNotifications" class="btn btn-primary">
+                <i class="bi bi-play-circle"></i> Run Tests
+        </a>
+   <a href="/DebugNotification/CheckDatabase" class="btn btn-info" target="_blank">
+   <i class="bi bi-database"></i> Check Database (JSON)
+ </a>
+         <a href="/Notification/Index" class="btn btn-success">
+              <i class="bi bi-bell"></i> View Notifications
+        </a>
+       </div>
+            </div>
+
+            <div class="mt-4">
+  <h5 class="text-light">How to Use:</h5>
+     <ol class="text-muted">
+     <li>Click "Run Tests" to create test notifications</li>
+          <li>Check if notifications are created in database</li>
+     <li>Verify admin users are detected correctly</li>
+             <li>Check unread count matches database</li>
+         <li>Open browser console (F12) to see SignalR logs</li>
+     </ol>
+            </div>
+
+     <div class="mt-4 alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+                <strong>Note:</strong> This is a debug tool. Remove or restrict access in production!
+        </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h4 class="text-light">SQL Query to Check Notifications:</h4>
+        <pre style="background: #0d1117; padding: 15px; border-radius: 5px; color: #c9d1d9;"><code>SELECT TOP 20 
+    N.Id,
+    N.UserId,
+    U.Email AS UserEmail,
+    N.Title,
+    N.Message,
+    N.Type,
+    N.IsRead,
+    N.CreatedAt
+FROM Notifications N
+INNER JOIN Security.Users U ON N.UserId = U.Id
+ORDER BY N.CreatedAt DESC;</code></pre>
+    </div>
+</div>

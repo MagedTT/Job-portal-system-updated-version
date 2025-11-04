@@ -1,0 +1,563 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using job_portal_system.Models.Domain
+@using job_portal_system.Data
+@using Microsoft.EntityFrameworkCore
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@inject ApplicationDbContext context
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Job Portal</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <link href="~/css/base.css" rel="stylesheet" />
+    <link href="~/css/themes.css" rel="stylesheet" />
+    <link href="~/css/layout.css" rel="stylesheet" />
+    <link href="~/css/components.css" rel="stylesheet" />
+    <link href="~/css/admin.css" rel="stylesheet" />
+    <link href="~/css/home-landing.css" rel="stylesheet" />
+    <link href="~/css/modal.css" rel="stylesheet" />
+    <link href="~/css/breadcrumb.css" rel="stylesheet" />
+    <link href="~/css/toggle-buttons.css" rel="stylesheet" />
+
+    <!-- Load theme switcher IMMEDIATELY in head to prevent flash -->
+    <script src="~/js/theme-switcher.js"></script>
+
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color:#0d1117; border-bottom:1px solid #21262d;">
+            <div class="container-fluid px-5">
+                <!-- Left: Logo -->
+                    <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 64 64" role="img" aria-labelledby="jobverseTitle jobverseDesc">
+                          <title id="jobverseTitle">Jobverse</title>
+                          <desc id="jobverseDesc">Logo: a planet with an orbit and a briefcase inside, gradient green</desc>
+
+                          <defs>
+                            <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+                              <stop offset="0" stop-color="#238636"/>
+                              <stop offset="1" stop-color="#2ea043"/>
+                            </linearGradient>
+                            <filter id="f1" x="-20%" y="-20%" width="140%" height="140%">
+                              <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#000" flood-opacity="0.25"/>
+                            </filter>
+                          </defs>
+
+                          <circle cx="32" cy="32" r="20" fill="url(#g1)" opacity="0.12"/>
+
+                          <circle cx="32" cy="32" r="16" fill="url(#g1)" filter="url(#f1)"/>
+
+                          <ellipse cx="32" cy="32" rx="22" ry="9" fill="none" stroke="#99f6b6" stroke-opacity="0.18" stroke-width="2" transform="rotate(-24 32 32)"/>
+
+                          <g transform="translate(0,0)">
+                            <rect x="22" y="28" width="20" height="10" rx="1.6" ry="1.6" fill="#0b1220" opacity="0.18"/>
+                            <rect x="22.8" y="28.6" width="18.4" height="9.2" rx="1.2" ry="1.2" fill="#ffffff" opacity="0.08"/>
+
+                            <rect x="23.6" y="27.8" width="16.8" height="8.4" rx="1.2" ry="1.2" fill="none" stroke="url(#g1)" stroke-width="1.6"/>
+
+                            <path d="M27.2 26.4 h9.6 a1.2 1.2 0 0 1 1.2 1.2 v0.4" fill="none" stroke="url(#g1)" stroke-width="1.6" stroke-linecap="round"/>
+
+                            <rect x="30.6" y="30.6" width="2.8" height="3.2" rx="0.6" fill="url(#g1)"/>
+                          </g>
+
+                          <g transform="translate(13,14)" fill="#f8f9fa" opacity="0.95">
+                            <path d="M2 0 L2.6 1.8 L4.6 2.2 L2.6 2.6 L2 4.4 L1.4 2.6 L-0.6 2.2 L1.4 1.8 Z" transform="scale(1.6)"/>
+                          </g>
+
+                          <circle cx="48.5" cy="18.5" r="0.9" fill="#c8f0d0" opacity="0.9"/>
+                          <circle cx="50.8" cy="30.2" r="0.6" fill="#e6ffef" opacity="0.8"/>
+                        </svg>
+                        <span class="fw-semibold text-light">Jobverse</span>
+                    </a>
+
+                <!-- Toggler -->
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                    <i class="bi bi-list text-light fs-3"></i>
+                </button>
+
+                <!-- Middle + Right -->
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <!-- Middle: Links - Role-based tabs -->
+                    <ul class="navbar-nav ms-3 me-auto d-flex align-items-center gap-1">
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <!-- Admin Tabs -->
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" && ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" ? "active" : "")" asp-controller="Admin" asp-action="Dashboard">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["action"]?.ToString() == "ManageUsers" ? "active" : "")" asp-controller="Admin" asp-action="ManageUsers">
+                                    <i class="bi bi-people"></i> Users
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["action"]?.ToString() == "PendingEmployers" ? "active" : "")" asp-controller="Admin" asp-action="PendingEmployers">
+                                    <i class="bi bi-building"></i> Employers & Job Seekers
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["action"]?.ToString() == "ManageJobs" ? "active" : "")" asp-controller="Admin" asp-action="ManageJobs">
+                                    <i class="bi bi-briefcase"></i> Jobs
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminContact" ? "active" : "")" asp-controller="AdminContact" asp-action="Messages">
+                                    <i class="bi bi-envelope"></i> Contact
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["action"]?.ToString() == "Reports" ? "active" : "")" asp-controller="Admin" asp-action="Reports">
+                                    <i class="bi bi-bar-chart"></i> Reports
+                                </a>
+                            </li>
+                        }
+                        else if (User.IsInRole("Employer"))
+                        {
+                            <!-- Employer Tabs -->
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" && ViewContext.RouteData.Values["controller"]?.ToString() == "Employer" ? "active" : "")" asp-controller="Employer" asp-action="Dashboard">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["action"]?.ToString() == "Applicants" ? "active" : "")" asp-controller="Employer" asp-action="Applicants">
+                                    <i class="bi bi-people"></i> Applicants
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["action"]?.ToString() == "ManageJobs" ? "active" : "")" asp-controller="Job" asp-action="ManageJobs">
+                                    <i class="bi bi-briefcase"></i> My Jobs
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["action"]?.ToString() == "Create" && ViewContext.RouteData.Values["controller"]?.ToString() == "Job" ? "active" : "")" asp-controller="Job" asp-action="Create">
+                                    <i class="bi bi-plus-circle"></i> Post Job
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <!-- JobSeeker/Guest Tabs -->
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-house"></i> Home
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Job" ? "active" : "")" asp-controller="Job" asp-action="Index">
+                                    <i class="bi bi-briefcase"></i> Jobs
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Companies" ? "active" : "")" asp-controller="Companies" asp-action="Index">
+                                    <i class="bi bi-buildings"></i> Companies
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 d-flex align-items-center gap-1 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Contact" ? "active" : "")" asp-controller="Contact" asp-action="Index">
+                                    <i class="bi bi-envelope"></i> Contact
+                                </a>
+                            </li>
+                        }
+                    </ul>
+
+                    <!-- Right: Actions -->
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Language Toggle Button -->
+                        @* <button id="languageToggle" class="theme-toggle" onclick="toggleLanguage()" title="Toggle Language">
+                            <i class="bi bi-translate"></i>
+                            <span>Arabic</span>
+                        </button>
+
+                        <!-- Theme Toggle Button -->
+                        <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+                            <i class="bi bi-sun-fill"></i>
+                            <span>Light</span>
+                        </button> *@
+
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            var currentUser = await UserManager.GetUserAsync(User);
+ 
+                            if (currentUser != null)
+                            {
+                                string displayName = currentUser.UserName ?? "User";
+                                string? imagePath = null;
+                                
+                                // Try to get JobSeeker or Employer name and image
+                                if (User.IsInRole("JobSeeker"))
+                                {
+                                    var jobSeeker = await context.JobSeekers.FirstOrDefaultAsync(js => js.UserId == currentUser.Id);
+                                    if (jobSeeker != null)
+                                    {
+                                        displayName = $"{jobSeeker.FirstName} {jobSeeker.LastName}".Trim();
+                                        if (string.IsNullOrWhiteSpace(displayName))
+                                        {
+                                            displayName = currentUser.UserName ?? "User";
+                                        }
+                                        imagePath = jobSeeker.ImagePath;
+                                    }
+                                }
+                                else if (User.IsInRole("Employer"))
+                                {
+                                    var employer = await context.Employers.FirstOrDefaultAsync(e => e.UserId == currentUser.Id);
+                                    if (employer != null && !string.IsNullOrEmpty(employer.CompanyName))
+                                    {
+                                        displayName = employer.CompanyName;
+                                        imagePath = employer.LogoPath;
+                                    }
+                                }
+
+                                <!-- Notification Bell -->
+         <div class="dropdown">
+<a class="nav-link position-relative" href="#" id="notificationMenu" data-bs-toggle="dropdown" style="cursor:pointer;">
+        <i class="bi bi-bell-fill fs-5 text-light"></i>
+   <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none; font-size:0.7rem;">
+         0
+  </span>
+    </a>
+           <div class="dropdown-menu dropdown-menu-end shadow-lg" style="width: 350px; max-height: 500px; overflow-y: auto; background: #161b22; border: 1px solid #30363d;">
+           <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom" style="border-color: #30363d !important;">
+        <h6 class="mb-0 text-light">Notifications</h6>
+             <button id="markAllRead" class="btn btn-sm" style="color: #58a6ff; padding: 2px 8px;">Mark all read</button>
+  </div>
+          <div id="notificationList" style="min-height: 100px;">
+          <div class="text-center py-4 text-muted">
+        <i class="bi bi-bell-slash fs-3"></i>
+                <p class="mb-0 mt-2">No notifications</p>
+ </div>
+              </div>
+        <div class="border-top text-center py-2" style="border-color: #30363d !important;">
+           <a asp-controller="Notification" asp-action="Index" class="text-decoration-none" style="color: #58a6ff; font-size: 0.9rem;">View all notifications</a>
+        </div>
+          </div>
+        </div>
+
+     <div class="dropdown">
+      <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-light"
+              href="#" id="userMenu" data-bs-toggle="dropdown" style="cursor:pointer;">
+                @if (!string.IsNullOrEmpty(imagePath))
+      {
+          <img src="@imagePath" alt="Profile" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #2ea043;" />
+       }
+         else
+       {
+        <i class="bi bi-person-circle fs-5"></i>
+           }
+           <span>@displayName</span>
+   </a>
+    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+          <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="bi bi-person"></i> Profile</a></li>
+   @if (User.IsInRole("JobSeeker"))
+             {
+         <li><a class="dropdown-item" asp-controller="Application" asp-action="MyApplications"><i class="bi bi-file-earmark-text"></i> My Applications</a></li>
+            <li><a class="dropdown-item" asp-controller="Messages" asp-action="Inbox"><i class="bi bi-envelope"></i> Messages</a></li>
+         }
+                @if (User.IsInRole("Employer"))
+    {
+      <li><a class="dropdown-item" asp-controller="Messages" asp-action="Inbox"><i class="bi bi-envelope"></i> Messages</a></li>
+        }
+    <li><a class="dropdown-item" asp-controller="Account" asp-action="Security"><i class="bi bi-shield-check"></i> Security</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+          </ul>
+   </div>
+       }
+       else
+ {
+      <!-- Fallback if user is signed in but user object is null -->
+          <a asp-controller="Account" asp-action="Logout"
+               class="btn btn-sm btn-outline-light d-flex align-items-center gap-1">
+      <i class="bi bi-box-arrow-right"></i> Logout
+</a>
+               }
+      }
+         else
+         {
+          <a asp-controller="Account" asp-action="Register"
+  class="btn btn-sm btn-outline-light d-flex align-items-center gap-1">
+            <i class="bi bi-person-plus"></i> Register
+        </a>
+           <a asp-controller="Account" asp-action="Login"
+    class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+ <i class="bi bi-box-arrow-in-right"></i> Login
+</a>
+      }
+    </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="@(ViewData["FullWidth"]?.ToString() == "true" ? "" : "fluid-container mt-3")">
+        @if (ViewData["HideBreadcrumb"]?.ToString() != "true")
+        {
+            <div class="container-fluid px-4 pt-3">
+                @await Component.InvokeAsync("Breadcrumb")
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <footer class="py-3 text-center mt-auto">
+        <span>© @DateTime.Now.Year Job Portal System  <span class="text-secondary">Designed with</span> <i class="bi bi-heart-fill text-danger"></i></span>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SignalR from Microsoft CDN - MUST load before notification script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js" crossorigin="anonymous"></script>
+@if (SignInManager.IsSignedIn(User))
+{
+    <script>
+        // Notification SignalR Integration
+     let notificationConnection;
+        
+        async function initNotifications() {
+console.log('[Notifications] Initializing notification system...');
+
+  // Build SignalR connection
+notificationConnection = new signalR.HubConnectionBuilder()
+         .withUrl("/notificationHub")
+      .withAutomaticReconnect()
+ .build();
+
+     // Handle incoming notifications
+      notificationConnection.on("ReceiveNotification", function (notification) {
+  console.log("[SignalR] Notification received:", notification);
+   
+      // Update unread count
+  updateUnreadCount();
+          
+  // Add notification to dropdown
+                addNotificationToDropdown(notification);
+        
+      // Show browser notification if supported
+   showBrowserNotification(notification);
+});
+
+       // Start connection
+   try {
+    await notificationConnection.start();
+         console.log("[SignalR] Connected to Notification Hub");
+      
+    // Load initial notifications
+       console.log('[Notifications] Loading initial data...');
+   loadNotifications();
+    updateUnreadCount();
+   } catch (err) {
+     console.error("[SignalR] Connection Error:", err);
+    console.log('[SignalR] Retrying in 5 seconds...');
+      setTimeout(initNotifications, 5000);
+      }
+     }
+
+        async function loadNotifications() {
+   try {
+         console.log('[Notifications] Loading notifications...');
+ const response = await fetch('/Notification/GetNotifications');
+       
+         if (!response.ok) {
+             console.error('[Notifications] Error response:', response.status, response.statusText);
+return;
+            }
+       
+           const notifications = await response.json();
+ console.log('[Notifications] Received notifications:', notifications);
+   
+   const notificationList = document.getElementById('notificationList');
+  
+          if (notifications && notifications.length > 0) {
+      notificationList.innerHTML = '';
+ notifications.slice(0, 10).forEach(notification => {
+     console.log('[Notifications] Adding notification:', notification);
+    addNotificationToDropdown(notification);
+     });
+      } else {
+         console.log('[Notifications] No notifications found');
+  notificationList.innerHTML = `
+        <div class="text-center py-4 text-muted">
+     <i class="bi bi-bell-slash fs-3"></i>
+      <p class="mb-0 mt-2">No notifications</p>
+       </div>`;
+           }
+          } catch (error) {
+     console.error("Error loading notifications:", error);
+          }
+      }
+
+     async function updateUnreadCount() {
+        try {
+     console.log('[Notifications] Updating unread count...');
+   const response = await fetch('/Notification/GetUnreadCount');
+   
+ if (!response.ok) {
+    console.error('[Notifications] Error getting unread count:', response.status);
+       return;
+            }
+          
+                const data = await response.json();
+console.log('[Notifications] Unread count data:', data);
+   
+             const badge = document.getElementById('notificationBadge');
+   if (data.count > 0) {
+ badge.textContent = data.count > 99 ? '99+' : data.count;
+        badge.style.display = 'block';
+   console.log('[Notifications] Showing badge with count:', data.count);
+           } else {
+ badge.style.display = 'none';
+         console.log('[Notifications] Hiding badge (count is 0)');
+ }
+ } catch (error) {
+        console.error("Error updating unread count:", error);
+    }
+        }
+
+    function addNotificationToDropdown(notification) {
+  const notificationList = document.getElementById('notificationList');
+         
+  // Remove "no notifications" message if it exists
+        const emptyMessage = notificationList.querySelector('.text-center');
+    if (emptyMessage) {
+     notificationList.innerHTML = '';
+      }
+       
+     const notificationHtml = `
+    <div class="notification-item px-3 py-2 border-bottom ${!(notification.isRead || notification.IsRead) ? 'unread' : ''}" 
+         style="cursor: pointer; border-color: #30363d !important; background: ${!(notification.isRead || notification.IsRead) ? 'rgba(56, 139, 253, 0.1)' : 'transparent'};"
+          data-id="${notification.id || notification.Id}"
+  onclick="handleNotificationClick(${notification.id || notification.Id}, '${notification.actionUrl || notification.ActionUrl || ''}')">
+         <div class="d-flex align-items-start gap-2">
+         <div class="flex-grow-1">
+           <div class="d-flex align-items-center gap-2 mb-1">
+   ${getNotificationIcon(notification.type || notification.Type)}
+ <strong class="text-light" style="font-size: 0.9rem;">${notification.title || notification.Title}</strong>
+  </div>
+       <p class="mb-1 text-muted" style="font-size: 0.85rem;">${notification.message || notification.Message}</p>
+            <small class="text-muted" style="font-size: 0.75rem;">
+  <i class="bi bi-clock"></i> ${formatNotificationTime(notification.createdAt || notification.CreatedAt)}
+</small>
+ </div>
+       ${!(notification.isRead || notification.IsRead) ? '<span class="badge bg-primary" style="font-size: 0.6rem;">New</span>' : ''}
+</div>
+     </div>`;
+        
+    // Add at the top
+ notificationList.insertAdjacentHTML('afterbegin', notificationHtml);
+        }
+
+   function getNotificationIcon(type) {
+  // Normalize type to string
+  const typeStr = (type || '').toString();
+       
+            const icons = {
+          'NewUser': '<i class="bi bi-person-plus-fill text-success"></i>',
+   'NewJobPost': '<i class="bi bi-briefcase-fill text-primary"></i>',
+       'NewApplication': '<i class="bi bi-file-earmark-text-fill text-info"></i>',
+ 'JobApplicationReceived': '<i class="bi bi-envelope-check-fill text-success"></i>',
+           'ApplicationWithdrawn': '<i class="bi bi-x-circle-fill text-warning"></i>',
+       'NewJobPosted': '<i class="bi bi-briefcase-fill text-primary"></i>',
+    'ApplicationStatusChanged': '<i class="bi bi-arrow-repeat text-info"></i>',
+       'ApplicationAccepted': '<i class="bi bi-check-circle-fill text-success"></i>',
+    'ApplicationRejected': '<i class="bi bi-x-circle-fill text-danger"></i>'
+      };
+return icons[typeStr] || '<i class="bi bi-bell-fill text-secondary"></i>';
+     }
+
+    function formatNotificationTime(dateString) {
+   const date = new Date(dateString);
+         const now = new Date();
+            const diff = Math.floor((now - date) / 1000); // seconds
+ 
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + ' hr ago';
+        if (diff < 604800) return Math.floor(diff / 86400) + ' days ago';
+        return date.toLocaleDateString();
+      }
+
+   async function handleNotificationClick(notificationId, actionUrl) {
+            // Mark as read
+            try {
+        await fetch(`/Notification/MarkAsRead?id=${notificationId}`, {
+       method: 'POST',
+  headers: {
+                 'Content-Type': 'application/json'
+    }
+      });
+          
+    // Update UI
+        updateUnreadCount();
+        const notificationElement = document.querySelector(`[data-id="${notificationId}"]`);
+        if (notificationElement) {
+        notificationElement.classList.remove('unread');
+notificationElement.style.background = 'transparent';
+  const badge = notificationElement.querySelector('.badge');
+        if (badge) badge.remove();
+     }
+        
+          // Navigate if URL is provided
+            if (actionUrl && actionUrl !== 'null') {
+    window.location.href = actionUrl;
+              }
+            } catch (error) {
+     console.error("Error marking notification as read:", error);
+ }
+        }
+
+ document.getElementById('markAllRead')?.addEventListener('click', async function() {
+            try {
+                await fetch('/Notification/MarkAllAsRead', {
+         method: 'POST'
+});
+        
+          // Update UI
+   updateUnreadCount();
+        document.querySelectorAll('.notification-item.unread').forEach(item => {
+          item.classList.remove('unread');
+     item.style.background = 'transparent';
+    const badge = item.querySelector('.badge');
+                if (badge) badge.remove();
+      });
+        } catch (error) {
+          console.error("Error marking all as read:", error);
+        }
+        });
+
+        function showBrowserNotification(notification) {
+   if ("Notification" in window && Notification.permission === "granted") {
+       new Notification(notification.title, {
+        body: notification.message,
+         icon: '/favicon.ico',
+          badge: '/favicon.ico'
+        });
+        }
+        }
+
+        // Request notification permission
+        if ("Notification" in window && Notification.permission === "default") {
+          Notification.requestPermission();
+      }
+
+     // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initNotifications);
+    </script>
+}
+
+<script>
+    // Initialize tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+</script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
