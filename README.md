@@ -12,14 +12,14 @@ Jobverse is a professional job portal system designed for real-world use. It sup
 
 ## ??? Tech Stack
 
-- **Backend:** .NET9, ASP.NET Core Razor Pages
-- **Frontend:** Razor Pages, Bootstrap5, custom CSS
+- **Backend:** .NET9, ASP.NET Core MVC
+- **Frontend:** Bootstrap5, custom CSS
 - **Database:** SQL Server, Entity Framework Core
 - **Authentication:** ASP.NET Core Identity
 - **Mapping:** AutoMapper
 - **Email:** SMTP (SendGrid-ready)
 - **Excel Export:** OfficeOpenXml
-- **Other:** Dependency Injection, Clean Architecture
+- **Other:** Dependency Injection
 
 ---
 
